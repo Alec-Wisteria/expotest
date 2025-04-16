@@ -681,35 +681,42 @@ sidebarBtn.addEventListener("click", ()=>{
 
     const fullName = document.getElementById('name').value;
     const email = document.getElementById('email').value;
-    const fileInput = document.getElementById('imageUpload');
+    const fileInput = document.getElementById('profilePic');
     let avatarUrl = null;
 
     // Upload image if selected
     if (fileInput.files.length > 0) {
       const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser.id}.${fileExt}`;
-      const filePath = `public/${currentUser.id}/${fileName}`;
+      const fileExt = file.name.split('.').pop(); // Get file extension
+      const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`; // Unique file name
+      const filePath = `${currentUser.id}/${fileName}`; // File path
+
+      console.log('Uploading file to:', filePath);
+      console.log('File name:', fileName);
+      console.log('File extension:', fileExt);
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true
+          upsert: true,
         });
 
       if (uploadError) {
         console.error('Upload error:', uploadError.message);
-        alert('Failed to upload image.');
+        alert(`Failed to upload image: ${uploadError.message}`);
         return;
       }
 
       const { data: publicUrlData } = supabase
         .storage
-        .from('avatars')
+        .from('avatars') // Ensure 'avatars' matches the bucket name in Supabase
         .getPublicUrl(filePath);
 
       avatarUrl = publicUrlData.publicUrl;
+
+      // Update the preview image
+      document.getElementById('previewImage').src = avatarUrl;
     }
 
     // Save to DB
@@ -727,6 +734,18 @@ sidebarBtn.addEventListener("click", ()=>{
       alert('Failed to update profile.');
     } else {
       alert('Profile updated successfully!');
+    }
+  });
+
+  // Preview the selected image before upload
+  document.getElementById('profilePic').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('previewImage').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   });
 

@@ -820,61 +820,7 @@ if (categoryMessages[category]) {
     document.getElementById("categoryMessage").innerHTML = categoryMessages[category];
 }
 
-//profile display
-async function loadProfile() {
-    const token = localStorage.getItem("token");
-    const profileDetails = document.getElementById("profile-details");
-    const usernameElement = document.getElementById("username");
-    const jobElement = document.getElementById("job");
 
-    if (!token) {
-      profileDetails.style.display = "none";
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3000/profile", {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + token }
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        localStorage.removeItem("token");
-        profileDetails.style.display = "none";
-      } else {
-        usernameElement.innerText = data.name;
-        jobElement.innerText = data.job || "User";
-        profileDetails.style.display = "flex";
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      profileDetails.style.display = "none";
-    }
-  }
-
-  //logout
-  function logout() {
-    localStorage.removeItem("token");
-    closeLogoutModal();
-    alert("Logged out successfully.");
-    loadProfile();
-  }
-  function showLogoutConfirmation() {
-    document.getElementById('logoutModal').style.display = 'block';
-  }
-  function closeLogoutModal() {
-    document.getElementById('logoutModal').style.display = 'none';
-  }
-  //event listener
-  window.addEventListener("storage", function(event) {
-    if (event.key === "token" && event.newValue === null) {
-      loadProfile();
-    }
-  });
-
-  //load profile
-  document.addEventListener("DOMContentLoaded", loadProfile);
 
 const suggestionsFromPDF = {
     "Underweight": {
@@ -1011,6 +957,11 @@ function closeModal() {
   modal.style.display = "none";
 }
 
+</script>
+
+<script type="module">
+    import { supabase } from './supabaseClient.js';
+// Profile details elements
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -1025,7 +976,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Show the profile section
     document.getElementById('profile-details').style.display = 'flex';
     document.getElementById('username').textContent = profile?.username || 'Guest';
-    document.getElementById('job').textContent = profile?.job || 'Fitness Enthusiast';
   }
 });
 
@@ -1041,6 +991,6 @@ window.logout = async function () {
   await supabase.auth.signOut();
   window.location.href = 'login.html'; // or wherever your login page is
 }
-</script>
+  </script>
 </body>
 </html>
