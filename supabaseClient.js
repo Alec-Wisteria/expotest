@@ -209,6 +209,16 @@ async function resizeImage(imageFile) {
  */
 export async function uploadProductImage(imageFile, userId) {
     try {
+        if (!imageFile.type.startsWith('image/')) {
+            alert('Please upload a valid image file.');
+            return null;
+        }
+
+        if (imageFile.size > 5 * 1024 * 1024) { // 5 MB limit
+            alert('File size exceeds the 5 MB limit.');
+            return null;
+        }
+
         const resizedImage = await resizeImage(imageFile);
         const sanitizedFileName = resizedImage.name.replace(/[^a-zA-Z0-9.\-_]/g, '_'); // Replace invalid characters
         const imagePath = `${userId}/${Date.now()}_${sanitizedFileName}`;
@@ -239,8 +249,21 @@ export async function uploadProductImage(imageFile, userId) {
  * @returns {Promise<void>} - Resolves if the upload is successful.
  */
 export async function uploadAvatar(filePath, file) {
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file.');
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5 MB limit
+        alert('File size exceeds the 5 MB limit.');
+        return;
+    }
+
+    console.log('Uploading file to:', filePath);
+    console.log('File details:', file);
+
     const { error: uploadError } = await supabase.storage
-        .from('avatars') // Use the bucket name here
+        .from('avatars')
         .upload(filePath, file, {
             cacheControl: '3600',
             upsert: true,
@@ -250,6 +273,18 @@ export async function uploadAvatar(filePath, file) {
         console.error('Error uploading avatar:', uploadError.message);
         throw new Error('Failed to upload avatar.');
     }
+
+    console.log('File uploaded successfully to:', filePath);
+}
+
+const file = document.getElementById('profilePic').files[0];
+const filePath = `test/${Date.now()}_${file.name}`;
+
+try {
+    await uploadAvatar(filePath, file);
+    alert('File uploaded successfully!');
+} catch (error) {
+    alert(`Failed to upload file: ${error.message}`);
 }
 
 /**
