@@ -473,11 +473,20 @@ body{
         <ul class="nav-links">
           <li>
             <a href="#">
-              <i class='bx bx-grid-alt' ></i>
-              <span class="link_name">Dashboard</span>
+              <i class='bx bx-grid-alt'></i>
+              <span class="link_name">Home</span>
             </a>
             <ul class="sub-menu blank">
-              <li><a class="link_name" href="#">Category</a></li>
+              <li><a class="link_name" href="#">Home</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="profile.html">
+              <i class='bx bx-bar-chart-alt' ></i>
+              <span class="link_name">Calculator</span>
+            </a>
+            <ul class="sub-menu blank">
+              <li><a class="link_name" href="calculator.html">Calculator</a></li>
             </ul>
           </li>
           <li>
@@ -622,7 +631,10 @@ const bmiMeterImages = {
     "Underweight": "image/underweight.jpg",
     "Normal Weight": "image/healthy-weight.jpg",
     "Overweight": "image/overweight.jpg",
-    "Obese": "image/obesity.jpg"
+    "Obese": "image/obesity.jpg",
+    "Class 1 Obsity": "image/class-1-obesity.jpg",
+    "Class 2 Obsity": "image/class-2-obesity.jpg",
+    "Class 3 Obsity": "image/class-3-obesity.jpg",
 };
 
 // Update the BMI meter image dynamically
@@ -677,130 +689,182 @@ const categoryMessages = {
 if (categoryMessages[category]) {
     document.getElementById("categoryMessage").innerHTML = categoryMessages[category];
 }
-  </script>
 
-<script>
-const suggestionsFromPDF = {
-  "Underweight": {
-    diet: [
-      `Whole Foods Weight Gain Diet: focus on whole grains, nuts, lean meats, and starchy vegetables. <a href="https://www.verywellfit.com/what-is-a-whole-foods-diet-2241974" target="_blank">Learn more</a>`,
-      `High-Calorie Smoothie-Based Diet: smoothies packed with nut butters, protein powder, milk, oats, etc. <a href="https://mattsfitchef.com/high-calorie-smoothie-to-gain-weight/" target="_blank">Learn more</a>`,
-      `Mediterranean Diet with Increased Portions: healthy fats like olive oil and fish, plus more frequent meals. <a href="https://my.clevelandclinic.org/health/articles/16037-mediterranean-diet" target="_blank">Learn more</a>`
-    ],
-    exercise: [
-      `Squats: Builds lower body strength and size.`,
-      `Push-Ups: Builds upper body and core strength.`,
-      `Deadlift: Strengthens total-body muscles including glutes and back.`
-    ],
-    health: [
-      `Consult a nutritionist for structured weight gain.`,
-      `Eat every 3–4 hours and add calorie-dense toppings.`,
-      `Track weight regularly and stay hydrated.`
-    ]
-  },
-  "Normal Weight": {
-    diet: [
-      `Mediterranean Diet: mostly veggies, fruits, whole grains, and olive oil. <a href="https://my.clevelandclinic.org/health/articles/16037-mediterranean-diet" target="_blank">Learn more</a>`,
-      `DASH Diet: fruits, vegetables, lean proteins, and low sodium. <a href="https://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/dash-diet/art-20047110" target="_blank">Learn more</a>`
-    ],
-    exercise: [
-      `Jogging: improves cardiovascular health and stamina.`,
-      `Cycling: boosts aerobic fitness and burns fat.`
-    ],
-    health: [
-      `Stick to consistent healthy habits.`,
-      `Hydrate well and include omega-3s regularly.`
-    ]
-  },
-  "Overweight": {
-    diet: [
-      `Low-Carb Diet: reduces refined carbs to promote fat burning. <a href="https://www.healthline.com/nutrition/low-carb-diet-meal-plan-and-menu" target="_blank">Learn more</a>`,
-      `Plant-Based Diet: emphasizes fruits, vegetables, and whole grains. <a href="https://www.forksoverknives.com/how-tos/plant-based-primer-beginners-guide-starting-plant-based-diet/" target="_blank">Learn more</a>`
-    ],
-    exercise: [
-      `HIIT: High-intensity intervals that burn fat effectively.`,
-      `Swimming: Full-body cardio workout with joint support.`
-    ],
-    health: [
-      `Practice portion control and reduce sugar intake.`,
-      `Get enough sleep and manage stress for better metabolism.`
-    ]
-  },
-  "Obese": {
-    diet: [
-      `Calorie-Restricted Diet: structured eating with fewer calories. <a href="https://www.verywellfit.com/what-is-a-very-low-calorie-diet-3496286" target="_blank">Learn more</a>`,
-      `Whole-Food Plant-Based Diet: unprocessed plant foods for weight loss. <a href="https://www.healthline.com/nutrition/plant-based-diet-guide" target="_blank">Learn more</a>`
-    ],
-    exercise: [
-      `Brisk Walking: accessible, low-impact cardio.`,
-      `Stationary Biking: improves heart and leg strength safely.`
-    ],
-    health: [
-      `Consult a doctor for a long-term plan.`,
-      `Start with gentle routines and increase gradually.`
-    ]
+//profile display
+async function loadProfile() {
+    const token = localStorage.getItem("token");
+    const profileDetails = document.getElementById("profile-details");
+    const usernameElement = document.getElementById("username");
+    const jobElement = document.getElementById("job");
+
+    if (!token) {
+      profileDetails.style.display = "none";
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/profile", {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        localStorage.removeItem("token");
+        profileDetails.style.display = "none";
+      } else {
+        usernameElement.innerText = data.name;
+        jobElement.innerText = data.job || "User";
+        profileDetails.style.display = "flex";
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      profileDetails.style.display = "none";
+    }
   }
+
+  //logout
+  function logout() {
+    localStorage.removeItem("token");
+    closeLogoutModal();
+    alert("Logged out successfully.");
+    loadProfile();
+  }
+  function showLogoutConfirmation() {
+    document.getElementById('logoutModal').style.display = 'block';
+  }
+  function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+  //event listener
+  window.addEventListener("storage", function(event) {
+    if (event.key === "token" && event.newValue === null) {
+      loadProfile();
+    }
+  });
+
+  //load profile
+  document.addEventListener("DOMContentLoaded", loadProfile);
+
+const suggestionsFromPDF = {
+    "Underweight": {
+        diet: [
+            `Whole Foods Weight Gain Diet: focus on whole grains, nuts, lean meats, and starchy vegetables. <a href="https://www.verywellfit.com/what-is-a-whole-foods-diet-2241974" target="_blank">Learn more</a>`,
+            `High-Calorie Smoothie-Based Diet: smoothies packed with nut butters, protein powder, milk, oats, etc. <a href="https://mattsfitchef.com/high-calorie-smoothie-to-gain-weight/" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Squats: Builds lower body strength and size.`,
+            `Push-Ups: Builds upper body and core strength.`
+        ],
+        health: [
+            `Consult a nutritionist for structured weight gain.`,
+            `Eat every 3–4 hours and add calorie-dense toppings.`
+        ]
+    },
+    "Normal Weight": {
+        diet: [
+            `Mediterranean Diet: mostly veggies, fruits, whole grains, and olive oil. <a href="https://my.clevelandclinic.org/health/articles/16037-mediterranean-diet" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Jogging: improves cardiovascular health and stamina.`,
+            `Cycling: boosts aerobic fitness and burns fat.`
+        ],
+        health: [
+            `Stick to consistent healthy habits.`,
+            `Hydrate well and include omega-3s regularly.`
+        ]
+    },
+    "Overweight": {
+        diet: [
+            `Low-Carb Diet: reduces refined carbs to promote fat burning. <a href="https://www.healthline.com/nutrition/low-carb-diet-meal-plan-and-menu" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `HIIT: High-intensity intervals that burn fat effectively.`,
+            `Swimming: Full-body cardio workout with joint support.`
+        ],
+        health: [
+            `Practice portion control and reduce sugar intake.`,
+            `Get enough sleep and manage stress for better metabolism.`
+        ]
+    },
+    "Obese": {
+        diet: [
+            `Calorie-Restricted Diet: structured eating with fewer calories. <a href="https://www.verywellfit.com/what-is-a-very-low-calorie-diet-3496286" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Brisk Walking: accessible, low-impact cardio.`,
+            `Stationary Biking: improves heart and leg strength safely.`
+        ],
+        health: [
+            `Consult a doctor for a long-term plan.`,
+            `Start with gentle routines and increase gradually.`
+        ]
+    },
+    "Obesity Class 1": {
+        diet: [
+            `Low-Calorie Diet: focus on reducing calorie intake while maintaining nutrition. <a href="https://www.healthline.com/nutrition/low-calorie-diet" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Walking: Start with 30 minutes daily and increase gradually.`,
+            `Yoga: Helps with flexibility and stress management.`
+        ],
+        health: [
+            `Consult a healthcare provider for a personalized plan.`,
+            `Monitor your progress regularly and stay consistent.`
+        ]
+    },
+    "Obesity Class 2": {
+        diet: [
+            `Structured Meal Plans: focus on portion control and balanced meals. <a href="https://www.eatright.org/" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Low-Impact Cardio: swimming or cycling for joint-friendly workouts.`,
+            `Strength Training: build muscle to boost metabolism.`
+        ],
+        health: [
+            `Work closely with a dietitian or doctor.`,
+            `Consider joining a weight-loss support group.`
+        ]
+    },
+    "Obesity Class 3": {
+        diet: [
+            `Medically Supervised Diet: consult a doctor for a safe plan. <a href="https://www.webmd.com/diet/obesity/ss/slideshow-weight-loss-surgery" target="_blank">Learn more</a>`
+        ],
+        exercise: [
+            `Chair Exercises: gentle movements to improve mobility.`,
+            `Water Aerobics: low-impact and joint-friendly.`
+        ],
+        health: [
+            `Seek immediate medical advice for weight management.`,
+            `Explore surgical options if recommended by a doctor.`
+        ]
+    }
 };
 
-// Function to show recommendations
 function showRecommendations(category) {
-  const dietBox = document.getElementById("diet");
-  const exerciseBox = document.getElementById("exercise");
-  const healthBox = document.getElementById("health");
+    const dietBox = document.getElementById("diet");
+    const exerciseBox = document.getElementById("exercise");
+    const healthBox = document.getElementById("health");
 
-  if (suggestionsFromPDF[category]) {
-    const cat = suggestionsFromPDF[category];
+    if (suggestionsFromPDF[category]) {
+        const cat = suggestionsFromPDF[category];
 
-    dietBox.innerHTML = getRandomItem(cat.diet);
-    exerciseBox.innerHTML = getRandomItem(cat.exercise);
-    healthBox.innerHTML = getRandomItem(cat.health);
-  } else {
-    dietBox.innerText = "No recommendation available.";
-    exerciseBox.innerText = "No recommendation available.";
-    healthBox.innerText = "No recommendation available.";
-  }
+        dietBox.innerHTML = getRandomItem(cat.diet);
+        exerciseBox.innerHTML = getRandomItem(cat.exercise);
+        healthBox.innerHTML = getRandomItem(cat.health);
+    } else {
+        dietBox.innerText = "No recommendation available.";
+        exerciseBox.innerText = "No recommendation available.";
+        healthBox.innerText = "No recommendation available.";
+    }
 }
 
 function getRandomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+    return arr[Math.floor(Math.random() * arr.length)];
 }
 
 // Show recommendations on load
 showRecommendations(category);
 </script>
-<script type="module">
-    import { supabase } from './supabaseClient.js';
-// Profile details elements
-document.addEventListener('DOMContentLoaded', async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (user) {
-    // Fetch additional profile info if stored in a 'profiles' table
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    // Show the profile section
-    document.getElementById('profile-details').style.display = 'flex';
-    document.getElementById('username').textContent = profile?.username || 'Guest';
-    document.getElementById('job').textContent = profile?.job || 'Fitness Enthusiast';
-  }
-});
-
-window.showLogoutConfirmation = function () {
-  document.getElementById('logoutModal').style.display = 'block';
-}
-
-window.closeLogoutModal = function () {
-  document.getElementById('logoutModal').style.display = 'none';
-}
-
-window.logout = async function () {
-  await supabase.auth.signOut();
-  window.location.href = 'login.html'; // or wherever your login page is
-}
-  </script>
 </body>
 </html>
