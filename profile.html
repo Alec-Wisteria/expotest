@@ -645,117 +645,109 @@ sidebarBtn.addEventListener("click", ()=>{
 });
 </script>
 <script type="module">
-    import { supabase } from './supabaseClient.js';
+  import { supabase } from './supabaseClient.js';
 
-    async function updateProfile(e) {
-        e.preventDefault();
-        const fullName = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
+  let currentUser = null;
 
-        // Upload profile image if selected
-        const fileInput = document.getElementById('imageUpload');
-        let avatarUrl = null;
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) throw error;
 
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const { data, error } = await supabase.storage
-                .from('avatars')
-                .upload(`public/${user.data.user.id}/${file.name}`, file, {
-                    cacheControl: '3600',
-                    upsert: true
-                });
+      currentUser = user;
 
-            if (error) {
-                console.error('Upload error:', error.message);
-                alert('Failed to upload profile image.');
-                return;
-            }
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-            const { data: publicUrlData } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(`public/${user.data.user.id}/${file.name}`);
-            avatarUrl = publicUrlData.publicUrl;
-        }
+      if (profileError) throw profileError;
 
-        // Update profile data
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .upsert({
-                id: user.data.user.id,
-                full_name: fullName,
-                email: email,
-                avatar_url: avatarUrl
-            });
+      // Populate the profile UI
+      document.getElementById('profile-details').style.display = 'flex';
+      document.getElementById('username').textContent = profile?.username || 'Guest';
+      document.getElementById('job').textContent = profile?.job || 'Fitness Enthusiast';
+      document.getElementById('name').value = profile?.full_name || '';
+      document.getElementById('email').value = profile?.email || '';
+      document.getElementById('previewImage').src = profile?.avatar_url || 'images/placeholder.png';
+    } catch (err) {
+      console.error('Error initializing profile:', err.message);
+    }
+  });
 
-        if (updateError) {
-            console.error('Profile update error:', updateError.message);
-            alert('Failed to update profile.');
-        } else {
-            alert('Profile updated successfully!');
-        }
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const fullName = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const fileInput = document.getElementById('imageUpload');
+    let avatarUrl = null;
+
+    // Upload image if selected
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}.${fileExt}`;
+      const filePath = `public/${currentUser.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError.message);
+        alert('Failed to upload image.');
+        return;
+      }
+
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      avatarUrl = publicUrlData.publicUrl;
     }
 
-    async function loadUserProfile() {
-        try {
-            const { data: user, error: userError } = await supabase.auth.getUser();
-            if (userError) throw userError;
+    // Save to DB
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: currentUser.id,
+        full_name: fullName,
+        email: email,
+        avatar_url: avatarUrl
+      });
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            if (error) throw error;
-
-            if (data) {
-                document.getElementById('name').value = data.full_name;
-                document.getElementById('email').value = data.email;
-                document.getElementById('previewImage').src = data.avatar_url || 'images/placeholder.png';
-            }
-        } catch (error) {
-            console.error('Error loading user profile:', error.message);
-        }
+    if (updateError) {
+      console.error('Profile update error:', updateError.message);
+      alert('Failed to update profile.');
+    } else {
+      alert('Profile updated successfully!');
     }
+  });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const { data: { user }, error } = await supabase.auth.getUser();
-            if (error) throw error;
+  window.showLogoutConfirmation = function () {
+    document.getElementById('logoutModal').style.display = 'block';
+  };
 
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
+  window.closeLogoutModal = function () {
+    document.getElementById('logoutModal').style.display = 'none';
+  };
 
-                document.getElementById('profile-details').style.display = 'flex';
-                document.getElementById('username').textContent = profile?.username || 'Guest';
-                document.getElementById('job').textContent = profile?.job || 'Fitness Enthusiast';
-            }
-        } catch (error) {
-            console.error('Error initializing profile:', error.message);
-        }
-    });
-
-    window.showLogoutConfirmation = function () {
-        document.getElementById('logoutModal').style.display = 'block';
-    };
-
-    window.closeLogoutModal = function () {
-        document.getElementById('logoutModal').style.display = 'none';
-    };
-
-    window.logout = async function () {
-        try {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error('Logout error:', error.message);
-        }
-    };
+  window.logout = async function () {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    } catch (error) {
+      console.error('Logout error:', error.message);
+    }
+  };
 </script>
+
 
 </body>
 </html>
