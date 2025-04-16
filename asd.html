@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<!-- Designined by CodingLab | www.youtube.com/codinglabyt -->
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <title> Drop Down Sidebar Menu | CodingLab </title>
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <script src="https://cdn.tailwindcss.com"></script>
+   </head>
+   <style>
+    /* Google Fonts Import Link */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+body{
+  overflow: hidden;
+}
+.sidebar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 260px;
+  background: #c8c8d3;
+  z-index: 100;
+  transition: all 0.5s ease;
+}
+.sidebar.close{
+  width: 78px;
+}
+.sidebar .logo-details {
+    height: 60px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .logo-details img {
+    width: 50px; /* Default small size */
+    height: 50px;
+    transition: all 0.3s ease; /* Smooth transition */
+}
+
+.sidebar.open .logo-details img {
+    width: 85px; /* Expand when open */
+    height: 85px;
+}
+
+.sidebar .logo-details .logo_name {
+    font-size: 22px;
+    color: #000000;
+    font-weight: 600;
+    transition: opacity 0.3s ease;
+    transition-delay: 0.1s;
+    padding-left: 18px;
+}
+
+.sidebar.close .logo-details .logo_name {
+    transition-delay: 0s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar .nav-links{
+  height: 100%;
+  padding: 30px 0 150px 0;
+  overflow: auto;
+}
+.sidebar.close .nav-links{
+  overflow: visible;
+}
+.sidebar .nav-links::-webkit-scrollbar{
+  display: none;
+}
+.sidebar .nav-links li{
+  position: relative;
+  list-style: none;
+  transition: all 0.4s ease;
+}
+.sidebar .nav-links li:hover{
+  background: #fbfbfb;
+}
+.sidebar .nav-links li .iocn-link{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar.close .nav-links li .iocn-link{
+  display: block
+}
+.sidebar .nav-links li i{
+  height: 50px;
+  min-width: 78px;
+  text-align: center;
+  line-height: 50px;
+  color: #000000;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.sidebar .nav-links li.showMenu i.arrow{
+  transform: rotate(-180deg);
+}
+.sidebar.close .nav-links i.arrow{
+  display: none;
+}
+.sidebar .nav-links li a{
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.sidebar .nav-links li a .link_name{
+  font-size: 18px;
+  font-weight: 400;
+  color: #000000;
+  transition: all 0.4s ease;
+}
+.sidebar.close .nav-links li a .link_name{
+  opacity: 0;
+  pointer-events: none;
+}
+.sidebar .nav-links li .sub-menu{
+  padding: 6px 6px 14px 80px;
+  margin-top: -10px;
+  background: #1d1b31;
+  display: none;
+}
+.sidebar .nav-links li.showMenu .sub-menu{
+  display: block;
+}
+.sidebar .nav-links li .sub-menu a{
+  color: #f1f1f1;
+  font-size: 15px;
+  padding: 5px 0;
+  white-space: nowrap;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+.sidebar .nav-links li .sub-menu a:hover{
+  opacity: 1;
+}
+.sidebar.close .nav-links li .sub-menu{
+  position: absolute;
+  left: 100%;
+  top: -10px;
+  margin-top: 0;
+  padding: 10px 20px;
+  border-radius: 0 6px 6px 0;
+  opacity: 0;
+  display: block;
+  pointer-events: none;
+  transition: 0s;
+}
+.sidebar.close .nav-links li:hover .sub-menu{
+  top: 0;
+  opacity: 1;
+  pointer-events: auto;
+  transition: all 0.4s ease;
+}
+.sidebar .nav-links li .sub-menu .link_name{
+  display: none;
+}
+.sidebar.close .nav-links li .sub-menu .link_name{
+  font-size: 18px;
+  opacity: 1;
+  display: block;
+}
+.sidebar .nav-links li .sub-menu.blank{
+  opacity: 1;
+  pointer-events: auto;
+  padding: 3px 20px 6px 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+.sidebar .nav-links li:hover .sub-menu.blank{
+  top: 50%;
+  transform: translateY(-50%);
+}
+.sidebar .profile-details{
+  position: fixed;
+  bottom: 0;
+  width: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #c2c1d4;
+  padding: 12px 0;
+  transition: all 0.5s ease;
+}
+.sidebar.close .profile-details{
+  background: none;
+}
+.sidebar.close .profile-details{
+  width: 78px;
+}
+.sidebar .profile-details .profile-content{
+  display: flex;
+  align-items: center;
+}
+.sidebar .profile-details img{
+  height: 52px;
+  width: 52px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 0 14px 0 12px;
+  background: #1d1b31;
+  transition: all 0.5s ease;
+}
+.sidebar.close .profile-details img{
+  padding: 10px;
+}
+.sidebar .profile-details .profile_name,
+.sidebar .profile-details .job{
+  color: #000000;
+  font-size: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sidebar.close .profile-details i,
+.sidebar.close .profile-details .profile_name,
+.sidebar.close .profile-details .job{
+  display: none;
+}
+.sidebar .profile-details .job{
+  font-size: 12px;
+}
+.home-section{
+  position: relative;
+  background: #E4E9F7;
+  height: 100vh;
+  left: 260px;
+  width: calc(100% - 260px);
+  transition: all 0.5s ease;
+  padding: 12px;
+  
+}
+.sidebar.close ~ .home-section{
+  left: 78px;
+  width: calc(100% - 78px);
+}
+.home-content{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.home-section .home-content .bx-menu,
+.home-section .home-content .text{
+  color: #11101d;
+  font-size: 35px;
+}
+.home-section .home-content .bx-menu{
+  cursor: pointer;
+  margin-right: 10px;
+}
+.home-section .home-content .text{
+  font-size: 26px;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 400px){
+  .sidebar{
+    width: 240px;
+  }
+  .sidebar.close{
+    width: 78px;
+  }
+  .sidebar .profile-details{
+    width: 240px;
+  }
+  .sidebar.close .profile-details{
+    background: none;
+  }
+  .sidebar.close .profile-details{
+    width: 78px;
+  }
+  .home-section {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  transition: all 0.3s ease;
+}
+
+.welcome-container {
+  text-align: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px 60px;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  max-width: 600px;
+}
+
+.welcome-container h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.welcome-container p {
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+  .sidebar.close ~ .home-section{
+    left: 78px;
+    width: calc(100% - 78px);
+  }
+}
+
+.modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 300px;
+        text-align: center;
+      }
+      .modal-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px;
+        font-size: 16px;
+      }
+      .modal-button.confirm {
+        background-color: #4CAF50;
+        color: white;
+      }
+      .modal-button.cancel {
+        background-color: #f44336;
+        color: white;
+      }
+
+   </style>
+<body class="bg-[#e9efff] font-sans">
+
+  <div class="sidebar close">
+    <div class="logo-details">
+        <img src="https://scontent.fmnl30-1.fna.fbcdn.net/v/t1.15752-9/491281118_2382492792112310_3443625629718728744_n.png?_nc_cat=106&ccb=1-7&_nc_sid=9f807c&_nc_eui2=AeHaa-S9wOr_C4wWbFu1UdJUkCmQHZHRso-QKZAdkdGyj9__C0kDqG_xqT1EXQSD1kDWOPBaQiw6kT4-5ALMvkWp&_nc_ohc=Gix8QqBnIwQQ7kNvwGOIX6x&_nc_oc=AdkctsmVvCknKonKPe5docstM_SzltiZF4h4k8m_SLwaKwiJMSuN1NlVKMam50cZpbs&_nc_zt=23&_nc_ht=scontent.fmnl30-1.fna&oh=03_Q7cD2AF9EEc9vZLKNXBiqgtq1BQM34ERoV_osAa12Tc3_C4vdA&oe=6826AC37" alt="logo">
+        <span class="logo_name">BodyCheck</span>
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="index.html">
+          <i class='bx bx-grid-alt'></i>
+          <span class="link_name">Home</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="index.html">Home</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="calculator.html">
+          <i class='bx bx-bar-chart-alt' ></i>
+          <span class="link_name">Calculator</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="calculator.html">Calculator</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="profile.html">
+          <i class='bx bx-user' ></i>
+          <span class="link_name">Profile</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="profile.html">Profile</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-history'></i>
+          <span class="link_name">History</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="#">History</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bx-cog' ></i>
+          <span class="link_name">Setting</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="#">Setting</a></li>
+        </ul>
+      </li>
+      <li>
+        <div class="profile-details" id="profile-details" style="display: none;">
+          <div class="profile-content">
+              <img src="image/placeholder.png" alt="profileImg">
+          </div>
+          <div class="name-job">
+              <div class="profile_name" id="username"></div>
+              <div class="job" id="job"></div>
+          </div>
+          <!-- The logout icon now triggers the modal -->
+          <i class='bx bx-log-out' onclick="showLogoutConfirmation()"></i>
+      </div>
+      
+      <!-- Logout Confirmation Modal -->
+      <div id="logoutModal" class="modal">
+          <div class="modal-content">
+              <h3>Are you sure you want to log out?</h3>
+              <button class="modal-button confirm" onclick="logout()">Confirm</button>
+              <button class="modal-button cancel" onclick="closeLogoutModal()">Cancel</button>
+          </div>
+      </div>                
+  </li>
+</ul>
+  </div>
+
+
+  <div class="home-section">
+    <div class="home-content">
+      <i class='bx bx-menu'></i>
+    </div>
+  
+    <main class="p-10 flex items-center justify-between">
+      <div>
+        <h1 class="text-5xl font-bold text-gray-900 mb-4">Welcome to BodyCheck</h1>
+        <p class="text-lg text-gray-700 max-w-xl mb-6">
+          BodyCheck is your personal health companion. Use our BMI calculator to understand your body mass index and get personalized recommendations to improve your health and fitness.
+        </p>
+        <button class="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-5 py-3 rounded-md">Let's Get Started</button>
+      </div>
+
+      <!-- Optional image like the Marlon one -->
+      <div class="hidden md:block">
+        <img src="https://scontent.fmnl30-1.fna.fbcdn.net/v/t1.15752-9/491281118_2382492792112310_3443625629718728744_n.png?_nc_cat=106&ccb=1-7&_nc_sid=9f807c&_nc_eui2=AeHaa-S9wOr_C4wWbFu1UdJUkCmQHZHRso-QKZAdkdGyj9__C0kDqG_xqT1EXQSD1kDWOPBaQiw6kT4-5ALMvkWp&_nc_ohc=Gix8QqBnIwQQ7kNvwGOIX6x&_nc_oc=AdkctsmVvCknKonKPe5docstM_SzltiZF4h4k8m_SLwaKwiJMSuN1NlVKMam50cZpbs&_nc_zt=23&_nc_ht=scontent.fmnl30-1.fna&oh=03_Q7cD2AF9EEc9vZLKNXBiqgtq1BQM34ERoV_osAa12Tc3_C4vdA&oe=6826AC37" alt="Logo" class="rounded-full bg-blue-600 p-2" />
+      </div>
+    </main>
+  </div>
+
+  <script src="https://kit.fontawesome.com/a2e0e6f91b.js" crossorigin="anonymous"></script>
+    
+  </section>
+  <script>
+    let arrow = document.querySelectorAll(".arrow");
+for (var i = 0; i < arrow.length; i++) {
+  arrow[i].addEventListener("click", (e)=>{
+ let arrowParent = e.target.parentElement.parentElement;
+ arrowParent.classList.toggle("showMenu");
+  });
+}
+
+let sidebar = document.querySelector(".sidebar");
+let sidebarBtn = document.querySelector(".bx-menu");
+console.log(sidebarBtn);
+sidebarBtn.addEventListener("click", ()=>{
+  sidebar.classList.toggle("close");
+});
+
+//profile display
+async function loadProfile() {
+    const token = localStorage.getItem("token");
+    const profileDetails = document.getElementById("profile-details");
+    const usernameElement = document.getElementById("username");
+    const jobElement = document.getElementById("job");
+
+    if (!token) {
+      profileDetails.style.display = "none";
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/profile", {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        localStorage.removeItem("token");
+        profileDetails.style.display = "none";
+      } else {
+        usernameElement.innerText = data.name;
+        jobElement.innerText = data.job || "User";
+        profileDetails.style.display = "flex";
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      profileDetails.style.display = "none";
+    }
+  }
+
+  // Function to handle logout
+  function logout() {
+    localStorage.removeItem("token");
+    closeLogoutModal();
+    alert("Logged out successfully.");
+    loadProfile(); // Optional: Update profile after logout
+  }
+
+  // Function to show the logout confirmation modal
+  function showLogoutConfirmation() {
+    document.getElementById('logoutModal').style.display = 'block';
+  }
+
+  // Function to close the logout confirmation modal
+  function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  // Event listener for `storage` event to handle logout from other pages
+  window.addEventListener("storage", function(event) {
+    if (event.key === "token" && event.newValue === null) {
+      // If the token is removed (logged out), update the profile
+      loadProfile();
+    }
+  });
+
+  // Load the profile when the page is loaded
+  document.addEventListener("DOMContentLoaded", loadProfile);
+  </script>
+<script src="https://kit.fontawesome.com/a2e0e6f91b.js" crossorigin="anonymous"></script>
+</body>
+</html>
