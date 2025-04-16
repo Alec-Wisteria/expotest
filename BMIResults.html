@@ -464,16 +464,21 @@ html, body {
 
 .box {
     background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    font-size: 16px;
-    line-height: 1.6;
-    width: 48%;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: left; /* Align text to the left for better readability */
+  font-size: 16px; /* Increase font size for better readability */
+  line-height: 1.8; /* Add more spacing between lines */
+  width: 48%; /* Keep boxes responsive */
+  min-height: 200px; /* Ensure consistent height */
+  margin: 10px 0;
 }
 
 .box1, .box2, .box3, .box4 {
-    min-height: 200px; /* Optional: keeps box sizes uniform */
+    display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Optional: keeps box sizes uniform */
 }
 
 .box5 {
@@ -543,6 +548,42 @@ html, body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow */
   cursor: pointer; /* Indicate the image is clickable */
 }
+
+.modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 300px;
+        text-align: center;
+      }
+      .modal-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px;
+        font-size: 16px;
+      }
+      .modal-button.confirm {
+        background-color: #4CAF50;
+        color: white;
+      }
+      .modal-button.cancel {
+        background-color: #f44336;
+        color: white;
+      }
+
    </style>
 <body>
     <div class="sidebar close">
@@ -766,11 +807,11 @@ const categoryMessages = {
         "Excess weight may increase the risk of chronic diseases such as diabetes and heart disease.",
     "Obese": "- You are Obese, High body mass may increase health risks.<br>" +
         "Obesity is associated with a higher risk of cardiovascular diseases, diabetes, and joint problems.",
-    "Obesity Class 1": "- You are in Obesity Class 1. This indicates moderate health risks.<br>" +
+    "Class 1 Obesity": "- You are in Obesity Class 1. This indicates moderate health risks.<br>" +
         "Consider consulting a healthcare provider for a structured weight-loss plan.",
-    "Obesity Class 2": "- You are in Obesity Class 2. This indicates high health risks.<br>" +
+    "Class 2 Obesity": "- You are in Obesity Class 2. This indicates high health risks.<br>" +
         "Seek professional medical advice to manage your weight effectively.",
-    "Obesity Class 3": "- You are in Obesity Class 3 (Severe Obesity). This indicates very high health risks.<br>" +
+    "Class 3 Obesity": "- You are in Obesity Class 3 (Severe Obesity). This indicates very high health risks.<br>" +
         "It is strongly recommended to consult a doctor for a comprehensive weight management plan."
 };
 
@@ -968,6 +1009,36 @@ function openModal() {
 function closeModal() {
   const modal = document.getElementById("imageModal");
   modal.style.display = "none";
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    // Fetch additional profile info if stored in a 'profiles' table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    // Show the profile section
+    document.getElementById('profile-details').style.display = 'flex';
+    document.getElementById('username').textContent = profile?.username || 'Guest';
+  }
+});
+
+window.showLogoutConfirmation = function () {
+  document.getElementById('logoutModal').style.display = 'block';
+}
+
+window.closeLogoutModal = function () {
+  document.getElementById('logoutModal').style.display = 'none';
+}
+
+window.logout = async function () {
+  await supabase.auth.signOut();
+  window.location.href = 'login.html'; // or wherever your login page is
 }
 </script>
 </body>
