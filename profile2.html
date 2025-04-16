@@ -691,8 +691,12 @@ sidebarBtn.addEventListener("click", ()=>{
       const fileName = `${currentUser.id}.${fileExt}`;
       const filePath = `public/${currentUser.id}/${fileName}`;
 
+      console.log('Uploading file to:', filePath);
+      console.log('File name:', fileName);
+      console.log('File extension:', fileExt);
+
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from('avatars') // Ensure 'avatars' matches the bucket name in Supabase
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true
@@ -706,7 +710,7 @@ sidebarBtn.addEventListener("click", ()=>{
 
       const { data: publicUrlData } = supabase
         .storage
-        .from('avatars')
+        .from('avatars') // Ensure 'avatars' matches the bucket name in Supabase
         .getPublicUrl(filePath);
 
       avatarUrl = publicUrlData.publicUrl;

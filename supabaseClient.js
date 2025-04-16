@@ -233,6 +233,26 @@ export async function uploadProductImage(imageFile, userId) {
 }
 
 /**
+ * Uploads a file to the 'avatars' bucket.
+ * @param {string} filePath - The path where the file will be stored.
+ * @param {File} file - The file to upload.
+ * @returns {Promise<void>} - Resolves if the upload is successful.
+ */
+export async function uploadAvatar(filePath, file) {
+    const { error: uploadError } = await supabase.storage
+        .from('avatars') // Use the bucket name here
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+        });
+
+    if (uploadError) {
+        console.error('Error uploading avatar:', uploadError.message);
+        throw new Error('Failed to upload avatar.');
+    }
+}
+
+/**
  * Notifies the buyer and updates their orders based on the seller's actions.
  * @param {string} orderId - The ID of the order.
  * @param {string} status - The updated status of the order.
