@@ -14,8 +14,15 @@
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
-body{
-  overflow: hidden;
+html, body {
+  height: 100%; /* Ensure the body and html cover the full height of the viewport */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  background: #E4E9F7; /* Set the background color */
 }
 .sidebar{
   position: fixed;
@@ -402,6 +409,21 @@ body{
     height: 225px; /* Set a fixed height */
     overflow-y: auto; /* Allow scrolling if content exceeds height */
 }
+
+/* Custom scrollbar styling */
+.box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar color */
+  border-radius: 10px;
+}
+
+.box::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Scrollbar hover color */
+}
+
 .box1 {
     background: rgb(255, 0, 0); /* Red background for Box 1 */
 }
@@ -454,6 +476,18 @@ body{
     min-height: 200px; /* Optional: keeps box sizes uniform */
 }
 
+.box5 {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.6;
+  width: 48%; /* Adjust width to match other boxes */
+  min-height: 200px; /* Optional: keeps box sizes uniform */
+}
+
 .meter {
     width: 100%; /* Adjust to fit the container */
     max-width: 200px; /* Set a maximum width */
@@ -462,6 +496,52 @@ body{
     margin: 10px auto; /* Center the image */
     border-radius: 10px; /* Optional: Add rounded corners */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow */
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.8); /* Black background with opacity */
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 100%; /* Allow the image to take up the full width of the modal */
+  max-width: 800px; /* Set a maximum width for the image */
+  max-height: 90vh; /* Ensure the image fits within the viewport height */
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bmi-meter-section {
+  text-align: center;
+  margin: 30px auto; /* Add spacing around the section */
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 600px; /* Limit the width of the section */
+}
+
+.bmi-meter-section h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.meter {
+  width: 100%; /* Make the image responsive */
+  max-width: 500px; /* Set a maximum width for the image */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 10px; /* Optional: Add rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow */
+  cursor: pointer; /* Indicate the image is clickable */
 }
    </style>
 <body>
@@ -552,10 +632,7 @@ body{
           <p><strong>Age:</strong> <span id="age">--</span></p>
           <p><i class='bx bx-heart'></i> <strong>BMI Score:</strong> <span id="bmiValue" style="font-size: 1.2em; font-weight: bold;">--</span></p>
           <p><i class='bx bx-body'></i> You're <u><strong><span id="bmiCategory" style="color:#e67300;">--</span></strong></u></p>
-          
-          <img id="bmiMeter" src="default-meter.png" class="meter" alt="BMI Meter">
       </div>
-  
 <!-- Top Right: Category -->
 <div class="box box3 category-box-enhanced">
     <h3><i class="bx bx-pie-chart-alt-2"></i> Category</h3>
@@ -596,6 +673,18 @@ body{
             <p id="health"></p>
         </div>
       </div>
+
+      <!-- BMI Meter Section -->
+      <section class="bmi-meter-section">
+        <h3><i class="bx bx-line-chart"></i> BMI Meter Result</h3>
+        <img id="bmiMeter" src="images/default-meter.png" alt="BMI Meter" class="meter" onclick="openModal()">
+      </section>
+
+      <!-- Modal for Viewing the Image -->
+      <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+      </div>
   </div>
   </section>
 
@@ -632,9 +721,9 @@ const bmiMeterImages = {
     "Normal Weight": "images/healthy-weight.jpg",
     "Overweight": "images/overweight.jpg",
     "Obese": "images/obesity.jpg",
-    "Class 1 Obsity": "images/class-1-obesity.jpg",
-    "Class 2 Obsity": "images/class-2-obesity.jpg",
-    "Class 3 Obsity": "images/class-3-obesity.jpg",
+    "Class 1 Obesity": "images/class-1-obesity.jpg",
+    "Class 2 Obesity": "images/class-2-obesity.jpg",
+    "Class 3 Obesity": "images/class-3-obesity.jpg",
 };
 
 // Update the BMI meter image dynamically
@@ -865,6 +954,21 @@ function getRandomItem(arr) {
 
 // Show recommendations on load
 showRecommendations(category);
+
+// Modal functionality
+function openModal() {
+  const modal = document.getElementById("imageModal");
+  const modalImage = document.getElementById("modalImage");
+  const bmiMeter = document.getElementById("bmiMeter");
+
+  modal.style.display = "block";
+  modalImage.src = bmiMeter.src; // Set the modal image source to the BMI meter image
+}
+
+function closeModal() {
+  const modal = document.getElementById("imageModal");
+  modal.style.display = "none";
+}
 </script>
 </body>
 </html>

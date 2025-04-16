@@ -559,7 +559,11 @@ let selectedGender = "";
             const bmi = (weight / (height * height)).toFixed(2);
             const category = bmi < 18.5 ? "Underweight" :
                             bmi < 24.9 ? "Normal Weight" :
-                            bmi < 29.9 ? "Overweight" : "Obese";
+                            bmi < 29.9 ? "Overweight" :
+                            bmi < 34.9 ? "Obese":
+                            bmi < 39.9 ? "Class 1 Obesity" :
+                            bmi < 44.9 ? "Class 2 Obesity" : "Class 3 Obesity";
+                            
 
                             window.location.href = `BMIResults.html?bmi=${bmi}&category=${category}&age=${age}&gender=${selectedGender}`;
         }
