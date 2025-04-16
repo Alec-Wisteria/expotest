@@ -556,7 +556,7 @@ body{
       <form id="profileForm">
         <div class="form-group">
           <label for="imageUpload">Change Profile Picture</label>
-          <input type="file" id="imageUpload" accept="image/*" onchange="previewProfileImage(event)">
+          <input type="file" id="profilePic" accept="image/*" onchange="previewProfileImage(event)">
         </div>
 
         <div class="form-group">
@@ -647,76 +647,74 @@ sidebarBtn.addEventListener("click", ()=>{
 <script type="module">
     import { supabase } from './supabaseClient.js';
 
-    async function updateProfile(e) {
-        e.preventDefault();
-        const fullName = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
+    const user = await supabase.auth.getUser()
+  const userId = user.data.user?.id
 
-        // Upload profile image if selected
-        const fileInput = document.getElementById('imageUpload');
-        let avatarUrl = null;
+  const profilePicInput = document.getElementById('profilePic')
+  const previewImg = document.getElementById('previewImg')
+  const usernameInput = document.getElementById('usernameInput')
+  const profileForm = document.getElementById('profileForm')
 
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const { data, error } = await supabase.storage
-                .from('avatars')
-                .upload(`public/${user.data.user.id}/${file.name}`, file, {
-                    cacheControl: '3600',
-                    upsert: true
-                });
+  let selectedFile = null
 
-            if (error) {
-                console.error('Upload error:', error.message);
-                alert('Failed to upload profile image.');
-                return;
-            }
+  profilePicInput.addEventListener('change', (e) => {
+    selectedFile = e.target.files[0]
+    if (selectedFile) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        previewImg.src = e.target.result
+      }
+      reader.readAsDataURL(selectedFile)
+    }
+  })
 
-            const { data: publicUrlData } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(`public/${user.data.user.id}/${file.name}`);
-            avatarUrl = publicUrlData.publicUrl;
-        }
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault()
 
-        // Update profile data
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .upsert({
-                id: user.data.user.id,
-                full_name: fullName,
-                email: email,
-                avatar_url: avatarUrl
-            });
+    let avatarUrl = null
 
-        if (updateError) {
-            console.error('Profile update error:', updateError.message);
-            alert('Failed to update profile.');
-        } else {
-            alert('Profile updated successfully!');
-        }
+    if (selectedFile && userId) {
+      const fileExt = selectedFile.name.split('.').pop()
+      const fileName = `${userId}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, selectedFile, { upsert: true })
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError.message)
+        return
+      }
+
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      avatarUrl = publicUrlData.publicUrl
     }
 
-    async function loadUserProfile() {
-        try {
-            const { data: user, error: userError } = await supabase.auth.getUser();
-            if (userError) throw userError;
+    // Save username and avatar_url to DB
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        username: usernameInput.value,
+        avatar_url: avatarUrl,
+      })
+      .eq('id', userId)
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            if (error) throw error;
-
-            if (data) {
-                document.getElementById('name').value = data.full_name;
-                document.getElementById('email').value = data.email;
-                document.getElementById('previewImage').src = data.avatar_url || 'images/placeholder.png';
-            }
-        } catch (error) {
-            console.error('Error loading user profile:', error.message);
-        }
+    if (updateError) {
+      console.error('Update error:', updateError.message)
+    } else {
+      alert('Profile updated!')
     }
+  })
+
+  function cancelChanges() {
+    profileForm.reset()
+    previewImg.src = 'images/placeholder.png'
+  }
 
     document.addEventListener('DOMContentLoaded', async () => {
         try {
